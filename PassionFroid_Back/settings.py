@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'polls.apps.PollsConfig',
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -77,11 +77,15 @@ WSGI_APPLICATION = 'PassionFroid_Back.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
+        'Trusted_Connection': 'no',
         'NAME': 'passionfroid',
         'USER': 'django_webapp',
         'PASSWORD': 'XDETyxYfZbWX',
         "HOST": "passionfroid.mysql.database.azure.com",
         "PORT": "3306",
+        'OPTIONS': {
+            'ssl': {'ca': 'DigiCertGlobalRootCA.crt.pem'}
+        }
     }
 }
 

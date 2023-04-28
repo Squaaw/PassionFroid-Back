@@ -7,7 +7,8 @@ from msrest.authentication import CognitiveServicesCredentials
 subscription_key = "429c8f33aee34845a441f6920b07f73a"
 endpoint = "https://passionfroid-cognitive-services.cognitiveservices.azure.com/"
 
-computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+computervision_client = ComputerVisionClient(
+    endpoint, CognitiveServicesCredentials(subscription_key))
 
 #########################################
 # Call API to analyze an image from URL #
