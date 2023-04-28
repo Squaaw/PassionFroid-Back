@@ -2,6 +2,7 @@ import io, os, base64, math, http.client, urllib.parse, json
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from msrest.authentication import CognitiveServicesCredentials
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
@@ -50,6 +51,27 @@ def get_image_vector_from_url(image_url):
         return image_vector
     except:
         raise("An error occured while fetching image's vector")
+
+def get_image_vector_from_base64(image_base64):
+    headers = {
+        # Request headers
+        'Content-Type': 'application/octet-stream',
+        'Ocp-Apim-Subscription-Key': SUBSCRIPTION_KEY,
+    }
+
+    url = "https://passionfroid-cognitive-services.cognitiveservices.azure.com/computervision/retrieval:vectorizeImage?api-version=2023-02-01-preview&model-version=latest"
+
+    binary_code = base64.b64decode(image_base64)
+    data = io.BytesIO(binary_code)
+
+    response = requests.post(url=url, data=data, headers=headers)
+
+    if response.status_code != 200:
+        raise("An error occured while fetching API. Wether the file or the subscription's key is not valid.")
+    
+    json_data = json.loads(response.content)
+    image_vector = json_data["vector"]
+    return image_vector
 
 def get_text_vector(text):
     request_headers = {
