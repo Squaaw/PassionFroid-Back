@@ -69,6 +69,7 @@ class UserViewSet(viewsets.ViewSet):
 
     def saveImages(self, request):
         try:
+            print(request.data['email'])
             # Authentification de l'utilisateur.
             user_id = get_user_id_from_token(request)
 
