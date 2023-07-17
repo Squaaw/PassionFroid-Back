@@ -10,4 +10,5 @@ urlpatterns = [
     path('images/<int:pk>/delete', views.ImageViewSetDetails.as_view({'delete': 'delete'}), name='image-delete'),
     path('images-tags/', views.ImageViewSet.as_view({'get': 'custom_method'}), name='list-categories'),
     path('images/max_id/', views.ImageViewSet.as_view({'get': 'max_id'}), name='image-max-id'),
+    path('images/search/', views.ImageViewSet.as_view({'post': 'getImagesSimilarity'}), name='image-search'),
 ]
