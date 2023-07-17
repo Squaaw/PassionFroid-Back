@@ -1,10 +1,11 @@
 import io, os, base64, math, http.client, urllib.parse, json
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from msrest.authentication import CognitiveServicesCredentials
-from dotenv import load_dotenv
+import environ
 import requests
 
-load_dotenv()
+env = environ.Env()
+environ.Env.read_env()
 
 # Authentication to Azure Cognitive Services
 ENDPOINT = os.getenv('AZURE_COGNITIVE_SERVICES_ENDPOINT')
@@ -20,6 +21,7 @@ def describe_image_from_base64(image_base64):
     image = io.BytesIO(binary_code)
     computervision_client = ComputerVisionClient(ENDPOINT, CognitiveServicesCredentials(SUBSCRIPTION_KEY))
     describe_image_result = computervision_client.describe_image_in_stream(image)
+
     return describe_image_result
 
 def get_image_vector_from_url(image_url):
@@ -90,7 +92,7 @@ def get_text_vector(text):
     }
 
     try:
-        conn = http.client.HTTPSConnection(host='passionfroid-cognitive-services.cognitiveservices.azure.com')
+        conn = http.client.HTTPSConnection(host=ENDPOINT)
         conn.request(method="POST", url="/computervision/retrieval:vectorizeText?api-version=2023-02-01-preview&%s" % request_params, body=json.dumps(request_body), headers=request_headers)
         
         response = conn.getresponse()
