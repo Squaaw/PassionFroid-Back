@@ -8,15 +8,15 @@ def validate_unique_textfield(value):
         raise ValidationError(('This value already exists.'))
 
 class Image(models.Model):
-    
-    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, blank=False, null=False)
-    tags = models.CharField(max_length=255, blank=True, null=True)
     description = models.CharField(max_length=255, blank=True, null=True)
     base64 = models.TextField(blank=True, null=True, validators=[validate_unique_textfield])
     width = models.IntegerField(blank=False , null=False)
     height = models.IntegerField(blank=False , null=False)
-    user = models.ForeignKey(User, on_delete = models.CASCADE, blank = True, null = True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    vector = models.JSONField(blank = False, null = False)
+    user = models.ForeignKey(User, on_delete = models.CASCADE, blank = False, null = False)
 
     def __str__(self):
         return self.name
