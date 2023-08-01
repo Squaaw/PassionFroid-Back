@@ -34,7 +34,7 @@ class ImageViewSet(viewsets.ViewSet):
         userAuthentication = authenticate(username="admin" , password="Imie-paris2023")
         imagesWithTags = []
         if(userAuthentication is not None):
-            images = Image.objects.all().raw("SELECT image.*, group_concat(tag.name separator ', ') AS tags FROM image_image AS image INNER JOIN tags_tags AS tag ON image.id = tag.image_id GROUP BY image.id")
+            images = Image.objects.all().raw("SELECT image.*, group_concat(tag.name separator ',') AS tags FROM image_image AS image INNER JOIN tags_tags AS tag ON image.id = tag.image_id GROUP BY image.id")
             print("images")
             for image in images:
                 imageObject = {
@@ -46,7 +46,7 @@ class ImageViewSet(viewsets.ViewSet):
                         "height": image.height,
                         "created_at": image.created_at,
                         "updated_at": image.updated_at,
-                        "tags": image.tags,
+                        "tags": image.tags.split(","),
                     }
                 imagesWithTags.append(imageObject)
             return Response(imagesWithTags, status=status.HTTP_200_OK)
@@ -64,14 +64,14 @@ class ImageViewSet(viewsets.ViewSet):
             
             getTextVector = get_text_vector(request.data.get("search"))
 
-            imagesFromDb = Image.objects.all() 
+            imagesFromDb = Image.objects.all().raw("SELECT image.*, group_concat(tag.name separator ',') AS tags FROM image_image AS image INNER JOIN tags_tags AS tag ON image.id = tag.image_id GROUP BY image.id")
 
             imagesSearch = []
 
             for image in imagesFromDb:
                 getImageVector = image.vector
                 print("getImageVector")
-                print(getImageVector)
+                print(image.tags)
                 if not getImageVector:
                     print("not image vector")
                 # Handle the case where an image vector is missing or invalid.
@@ -80,9 +80,6 @@ class ImageViewSet(viewsets.ViewSet):
                 getCosinusSimilarity = get_cosine_similarity(getImageVector, getTextVector)
                 percentageSimilarity = getCosinusSimilarity * 100
 
-                print("percentageSimilarity")
-                print(percentageSimilarity)
-                print(image.name)
                 if(percentageSimilarity >= 25):
                     imageObject = {
                         "id": image.id,
@@ -94,9 +91,9 @@ class ImageViewSet(viewsets.ViewSet):
                         "created_at": image.created_at,
                         "updated_at": image.updated_at,
                         "similarity": percentageSimilarity,
+                        "tags": image.tags.split(",")
                     }
-                    print("imageObject")
-                    print(imageObject)
+                    
                     imagesSearch.append(imageObject)
 
             return Response(imagesSearch, status=status.HTTP_200_OK)

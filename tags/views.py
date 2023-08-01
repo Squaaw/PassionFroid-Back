@@ -27,11 +27,26 @@ class TagsViewSet(viewsets.ViewSet):
             return Response({'msg': f'Vous n\'avez pas accès à cette ressource'}, status=status.HTTP_401_UNAUTHORIZED)
            
         tags = request.data.get("tags")
+        imageIdList = Tags.objects.filter(name__in=tags).values_list("image_id", flat=True).distinct()
+        imageJoin = ",".join(str(imageId) for imageId in imageIdList)
+        imageList = Image.objects.all().raw(f"SELECT DISTINCT image.*, group_concat(tag.name separator ',') AS tags FROM image_image AS image INNER JOIN tags_tags AS tag ON image.id = tag.image_id WHERE image.id IN ({imageJoin}) GROUP BY image.id")
 
-        imageId = Tags.objects.filter(name__in=tags).values_list("image_id", flat=True).distinct()
-        imageList = Image.objects.filter(id__in=imageId)
+        imagesSearch = []
 
-        serializerByImage = ImageSerializer(imageList, many=True)
-        # print("serializerByImage.data")
-        # print(serializerByImage.data)
-        return Response(serializerByImage.data, status=status.HTTP_200_OK)
+        for image in imageList:
+            
+            imageObject = {
+                "id": image.id,
+                "name": image.name,
+                "base64": image.base64,
+                "description": image.description,
+                "width": image.width,
+                "height": image.height,
+                "created_at": image.created_at,
+                "updated_at": image.updated_at,
+                "tags": image.tags.split(",")
+            }
+                
+            imagesSearch.append(imageObject)
+       
+        return Response(imagesSearch, status=status.HTTP_200_OK)
