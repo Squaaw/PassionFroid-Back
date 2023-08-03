@@ -11,11 +11,11 @@ class Image(models.Model):
     name = models.CharField(max_length=255, blank=False, null=False)
     description = models.CharField(max_length=255, blank=True, null=True)
     base64 = models.TextField(blank=True, null=True, validators=[validate_unique_textfield])
-    width = models.IntegerField(blank=False , null=False)
-    height = models.IntegerField(blank=False , null=False)
+    width = models.IntegerField(blank=True, null=False)
+    height = models.IntegerField(blank=True , null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    vector = models.JSONField(blank = False, null = False)
+    vector = models.JSONField(blank = True, null = False)
     user = models.ForeignKey(User, on_delete = models.CASCADE, blank = False, null = False)
 
     def __str__(self):

@@ -5,8 +5,13 @@ from rest_framework import viewsets, status
 from .serializers import TagsSerializer
 from image.serializers import ImageSerializer
 from rest_framework.response import Response
+from django.core.exceptions import ValidationError
 from .models import Tags, Image
 # Create your views here.
+
+class SomeCustomException(BaseException):
+    pass
+
 class TagsViewSet(viewsets.ViewSet):
 
     def get(self, request, *args, **kwargs):
@@ -50,3 +55,30 @@ class TagsViewSet(viewsets.ViewSet):
             imagesSearch.append(imageObject)
        
         return Response(imagesSearch, status=status.HTTP_200_OK)
+    
+
+    @action(detail=False, methods=['post'])
+    def removeTagsByName(self, request, *args, **kwargs):
+        try:
+            
+            image_id = request.data.get('image_id')
+            tag_names = request.data.get('tags')
+            print("id")
+            print(image_id)
+            print("name")
+            print(tag_names)
+            
+            # Recherche de l'image spécifique par son ID
+            image = Image.objects.get(id=image_id)
+
+            # Suppression du tag ayant comme nom "sport" pour l'image spécifiée
+            Tags.objects.filter(image=image, name__in=tag_names).delete()
+
+            return Response({'message': f"Le tag a été supprimé avec succès pour l'image ayant l'ID: {image_id}"})
+
+        except SomeCustomException as error:
+            return Response({'msg': f'{error}'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        
+        

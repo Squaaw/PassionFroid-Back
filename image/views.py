@@ -183,10 +183,11 @@ class ImageViewSetDetails(viewsets.ViewSet):
   
     def put(self, request, pk, format=None):
         snippet = self.get_object(pk)
-        serializer = ImageSerializer(snippet, data=request.data)
+        imageName = {"name": request.data.get("name")}
+        serializer = ImageSerializer(snippet, data=imageName)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response({'msg': f"Le titre de l'image {pk} a bien été modifié", 'status': status.HTTP_200_OK}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
