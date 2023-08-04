@@ -43,7 +43,7 @@ class TagsViewSet(viewsets.ViewSet):
             imageObject = {
                 "id": image.id,
                 "name": image.name,
-                "base64": image.base64,
+                "source": image.source,
                 "description": image.description,
                 "width": image.width,
                 "height": image.height,

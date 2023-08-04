@@ -16,11 +16,16 @@ from image.services import get_images_from_db
 from urllib.parse import unquote
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+import os, io
+import base64
+import requests
 
 class SomeCustomException(BaseException):
     pass
 
 class ImageViewSet(viewsets.ViewSet):
+    
 
     @action(detail=False, methods=['get'])
     def max_id(self, request):
@@ -40,7 +45,7 @@ class ImageViewSet(viewsets.ViewSet):
                 imageObject = {
                         "id": image.id,
                         "name": image.name,
-                        "base64": image.base64,
+                        "source": image.source,
                         "description": image.description,
                         "width": image.width,
                         "height": image.height,
@@ -84,7 +89,7 @@ class ImageViewSet(viewsets.ViewSet):
                     imageObject = {
                         "id": image.id,
                         "name": image.name,
-                        "base64": image.base64,
+                        "source": image.source,
                         "description": image.description,
                         "width": image.width,
                         "height": image.height,
@@ -101,18 +106,49 @@ class ImageViewSet(viewsets.ViewSet):
         except SomeCustomException as error:
            return Response({'msg': f'{error}'}, status=status.HTTP_400_BAD_REQUEST)
         
+    
+    
+    # def download_file_from_azure_blob(blob_name, file_path):
+    #     blob_service_client = BlobServiceClient(account_url=f"https://azurestoragepassionfroid.blob.core.windows.net/", credential="p3ZVdWil92t1HBupchxr9oAaHG9h6umFibYDWH7TdPCGxj/4+1Y9Sw+hi0qQUhyav7oS1gkj8ogd+AStKZLE8g==")
+    #     blob_client = blob_service_client.get_blob_client(container='passionfroid-container', blob=blob_name)
+        
+    #     with open(file_path, "wb") as file:
+    #         file.write(blob_client.download_blob().readall())
+    
+
+        
 
     def post(self, request):
         userAuthentication = authenticate(username="admin" , password="Imie-paris2023")
-       
+        
+
         if(userAuthentication is not None):
             try:
                 user = User.objects.get(username="admin")
-                base64 = request.data.get("base64")
-                print("user")
-                print(user)
-                cognitiveObjet = describe_image_from_base64(base64)
-                imageVector = get_image_vector_from_base64(base64)
+                base64_val = request.data.get("source")
+                name = request.data.get('name')
+                print("source")
+                print(base64_val)
+                
+                # Se connecter au compte de stockage Azure Blob
+                try: 
+                    blob_service_client = BlobServiceClient(account_url=f"https://azurestoragepassionfroid.blob.core.windows.net", credential="p3ZVdWil92t1HBupchxr9oAaHG9h6umFibYDWH7TdPCGxj/4+1Y9Sw+hi0qQUhyav7oS1gkj8ogd+AStKZLE8g==")
+                 
+                    container_name = 'passionfroid-container'
+                    container_client = blob_service_client.get_container_client(container_name)
+                    base64_data = base64.b64decode(base64_val.split(',')[1])
+                    blob_client = container_client.get_blob_client(name)
+                    blob_client.upload_blob(base64_data)
+                    print("blob_client")
+                    print(blob_client.url)
+                except Exception as error:
+                    print(f"{error}")
+            
+                
+                
+                
+                cognitiveObjet = describe_image_from_base64(base64_val)
+                imageVector = get_image_vector_from_base64(base64_val)
          
                 emptyTags = "No tags available"
                 emptyDescription = "No description available"
@@ -120,18 +156,17 @@ class ImageViewSet(viewsets.ViewSet):
     
                 description = emptyDescription if cognitiveObjet.captions is None else cognitiveObjet.captions[0].text
 
-                name = request.data.get('name')
+                
                 
                 width = request.data.get('width')
                 height = request.data.get('height')
                
                 tagsFromB64 = cognitiveObjet.tags
-             
-                # Authentification de l'utilisateur.
+
                 image = {
                         'name': name,
                         'description': description,
-                        'base64': base64,
+                        'source': blob_client.url,
                         'width' : width,
                         'height': height,
                         'vector': imageVector
@@ -154,8 +189,9 @@ class ImageViewSet(viewsets.ViewSet):
                     
                 return Response({'msg': "L'image a correctement été créee", 'status': status.HTTP_200_OK}, status=status.HTTP_200_OK)
             except Exception as error:
+                print(f"{error}")
                 if status.HTTP_400_BAD_REQUEST:
-                    return Response({'msg': f'Cette image existe déjà. veuillez en choisir une autre'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'msg': f'{error}'}, status=status.HTTP_400_BAD_REQUEST)
             
         else:
             return Response({'msg': f'Vous n\'avez pas les droits pour effectuer cette action'}, status=status.HTTP_400_BAD_REQUEST)

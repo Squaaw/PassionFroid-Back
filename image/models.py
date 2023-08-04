@@ -4,13 +4,13 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 def validate_unique_textfield(value):
-    if Image.objects.filter(base64=value).exists():
+    if Image.objects.filter(source=value).exists():
         raise ValidationError(('This value already exists.'))
 
 class Image(models.Model):
     name = models.CharField(max_length=255, blank=False, null=False)
     description = models.CharField(max_length=255, blank=True, null=True)
-    base64 = models.TextField(blank=True, null=True, validators=[validate_unique_textfield])
+    source = models.TextField(blank=True, null=True, validators=[validate_unique_textfield])
     width = models.IntegerField(blank=True, null=False)
     height = models.IntegerField(blank=True , null=False)
     created_at = models.DateTimeField(auto_now_add=True)
