@@ -4,7 +4,10 @@ from rest_framework import status, viewsets
 from .serializers import UserSerializer
 from .utils import get_tokens_for_user, test_password, get_user_id_from_token, get_collection
 from .models import User
+from .services import *
 from django.conf import settings
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 # Create your views here.
 
@@ -66,6 +69,7 @@ class UserViewSet(viewsets.ViewSet):
 
     def saveImages(self, request):
         try:
+            print(request.data['email'])
             # Authentification de l'utilisateur.
             user_id = get_user_id_from_token(request)
 
@@ -172,3 +176,10 @@ class UserViewSet(viewsets.ViewSet):
 
         except:
             return Response({'msg': settings.INTERNAL_ERROR_MESSAGE}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def generateImage(self, request):
+        try:
+            print(image)
+            return HttpResponseRedirect(reverse("base_64_img", args=(image,)))
+        except:
+            return Response({'msg': "Une erreur interne est survenue lors de la génération de l'image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

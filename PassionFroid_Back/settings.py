@@ -9,8 +9,10 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,13 +33,16 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'polls.apps.PollsConfig',
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
+    'image',
+    'tags'
 ]
 
 MIDDLEWARE = [
@@ -48,7 +53,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = (
+  'http://localhost:4200',
+)
 
 ROOT_URLCONF = 'PassionFroid_Back.urls'
 
@@ -77,11 +88,15 @@ WSGI_APPLICATION = 'PassionFroid_Back.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'passionfroid',
-        'USER': 'django_webapp',
-        'PASSWORD': 'XDETyxYfZbWX',
-        "HOST": "passionfroid.mysql.database.azure.com",
-        "PORT": "3306",
+        'Trusted_Connection': 'no',
+        'NAME': os.getenv('DATABASE_NAME_DEV'),
+        'USER':  os.getenv('DATABASE_USER_DEV'),
+        'PASSWORD':  os.getenv('DATABASE_PASSWORD_DEV'),
+        "HOST":  os.getenv('DATABASE_HOST_DEV'),
+        "PORT": os.getenv('DATABASE_PORT_DEV'),
+        'OPTIONS': {
+            'ssl': {'ca': 'DigiCertGlobalRootCA.crt.pem'}
+        }
     }
 }
 
