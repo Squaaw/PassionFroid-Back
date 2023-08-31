@@ -40,7 +40,7 @@ class ImageViewSet(viewsets.ViewSet):
         imagesWithTags = []
         if(userAuthentication is not None):
             images = Image.objects.all().raw("SELECT image.*, group_concat(tag.name separator ',') AS tags FROM image_image AS image INNER JOIN tags_tags AS tag ON image.id = tag.image_id GROUP BY image.id")
-            print("images")
+            
             for image in images:
                 imageObject = {
                         "id": image.id,
@@ -62,7 +62,6 @@ class ImageViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'])
     def getImagesSimilarity(self, request, *args, **kwargs):
         try:
-            print("request.data.get")
             search_text = request.data.get("search")
             if not search_text:
                 raise ValidationError("Search text is missing in the request.")
@@ -75,11 +74,7 @@ class ImageViewSet(viewsets.ViewSet):
 
             for image in imagesFromDb:
                 getImageVector = image.vector
-                print("getImageVector")
-                print(image.tags)
                 if not getImageVector:
-                    print("not image vector")
-                # Handle the case where an image vector is missing or invalid.
                     continue
 
                 getCosinusSimilarity = get_cosine_similarity(getImageVector, getTextVector)
@@ -127,37 +122,24 @@ class ImageViewSet(viewsets.ViewSet):
                 user = User.objects.get(username="admin")
                 base64_val = request.data.get("source")
                 name = request.data.get('name')
-                print("source")
-                print(base64_val)
                 
                 # Se connecter au compte de stockage Azure Blob
                 try: 
                     blob_service_client = BlobServiceClient(account_url=f"https://azurestoragepassionfroid.blob.core.windows.net", credential="p3ZVdWil92t1HBupchxr9oAaHG9h6umFibYDWH7TdPCGxj/4+1Y9Sw+hi0qQUhyav7oS1gkj8ogd+AStKZLE8g==")
-                 
                     container_name = 'passionfroid-container'
                     container_client = blob_service_client.get_container_client(container_name)
                     base64_data = base64.b64decode(base64_val.split(',')[1])
                     blob_client = container_client.get_blob_client(name)
                     blob_client.upload_blob(base64_data)
-                    print("blob_client")
-                    print(blob_client.url)
                 except Exception as error:
                     print(f"{error}")
-            
-                
-                
-                
+
                 cognitiveObjet = describe_image_from_base64(base64_val)
                 imageVector = get_image_vector_from_base64(base64_val)
          
                 emptyTags = "No tags available"
                 emptyDescription = "No description available"
-       
-    
                 description = emptyDescription if cognitiveObjet.captions is None else cognitiveObjet.captions[0].text
-
-                
-                
                 width = request.data.get('width')
                 height = request.data.get('height')
                
@@ -176,7 +158,6 @@ class ImageViewSet(viewsets.ViewSet):
 
                 if serializer.is_valid(raise_exception=True):
                     serializer.save(user=user)
-                    print("image")
                     imageObj = Image.objects.get(id=serializer.data['id'])
                     for tagB in tagsFromB64:
                         
@@ -229,8 +210,5 @@ class ImageViewSetDetails(viewsets.ViewSet):
 
     def delete(self, request, pk, format=None):
         snippet = self.get_object(pk)
-        serializer = ImageSerializer(snippet, data=request.data)
-        if serializer.is_valid():
-            print(serializer.data)
         snippet.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

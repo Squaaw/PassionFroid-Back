@@ -15,7 +15,6 @@ class SomeCustomException(BaseException):
 class TagsViewSet(viewsets.ViewSet):
 
     def get(self, request, *args, **kwargs):
-        print("test get")
         userAuthentication = authenticate(username="admin" , password="Imie-paris2023")
        
         if(userAuthentication is None):
@@ -63,10 +62,6 @@ class TagsViewSet(viewsets.ViewSet):
             
             image_id = request.data.get('image_id')
             tag_names = request.data.get('tags')
-            print("id")
-            print(image_id)
-            print("name")
-            print(tag_names)
             
             # Recherche de l'image spécifique par son ID
             image = Image.objects.get(id=image_id)

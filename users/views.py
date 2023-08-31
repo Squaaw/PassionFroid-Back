@@ -69,7 +69,6 @@ class UserViewSet(viewsets.ViewSet):
 
     def saveImages(self, request):
         try:
-            print(request.data['email'])
             # Authentification de l'utilisateur.
             user_id = get_user_id_from_token(request)
 
@@ -179,7 +178,6 @@ class UserViewSet(viewsets.ViewSet):
 
     def generateImage(self, request):
         try:
-            print(image)
             return HttpResponseRedirect(reverse("base_64_img", args=(image,)))
         except:
             return Response({'msg': "Une erreur interne est survenue lors de la génération de l'image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
